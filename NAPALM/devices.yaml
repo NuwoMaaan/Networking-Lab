@@ -1,0 +1,21 @@
+devices:
+  DSW1:
+    os: ios
+    hostname: 192.168.100.1
+    username: admin
+    password: adminpassword
+    secret: password
+
+  DSW2:
+    os: ios
+    hostname: 192.168.100.2
+    username: admin
+    password: adminpassword2
+    secret: 
+  
+  CSW1:
+    os: ios
+    hostname: 192.168.211.155
+    username: admin
+    password: adminpassword3
+    secret: 
