@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 
-@dataclass
+
+
+@dataclass()
 class DeviceConfig():
     def __init__(self, OperatingSystem, node_name, hostname, username, password, secret=None):
         self.node_name: str = node_name
