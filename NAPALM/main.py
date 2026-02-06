@@ -47,47 +47,68 @@ def initialize_device_connections(devices: list[DeviceConfig]) -> dict[str, Netw
 
 def get_device_facts(devices: dict[str, NetworkDriver]) -> list[list[str]]:
     device_facts = [["hostname", "vendor", "model", "uptime", "serial_number"]]
-    print("Retrieving device facts")
-    for d in devices:
-        print(d)
-        with devices[d] as device:
-            facts = device.get_facts()
+    print("Retrieving device facts...")
+    for device in devices:
+        with devices[device] as d:
+            facts = d.get_facts()
             device_facts.append([facts['hostname'],
                                  facts["vendor"],
                                  facts["model"],
                                  facts["uptime"],
                                  facts['serial_number']
-                                ])
+            ])
     print("Getting facts - Complete")
     return device_facts
 
+def get_device_interfaces(devices: dict[str, NetworkDriver]) -> list[list[str]]:
+    device_interfaces = [["hostname", "interface","is_up", "is_enabled", "description", "speed", "mtu"]]
+    print("Retrieving device interfaces...")
+    for device in devices:
+        with devices[device] as d:
+            interfaces = d.get_interfaces()
+            for interface in interfaces:
+                device_interfaces.append([device,
+                                        interface,
+                                        interfaces[interface]["is_up"],
+                                        interfaces[interface]["is_enabled"],
+                                        interfaces[interface]["description"],
+                                        interfaces[interface]["speed"],
+                                        interfaces[interface]["mtu"],
+                ])
+    print("Getting interfaces - Complete")
+    return device_interfaces
+
+
 def get_device_configs(devices: dict[str, NetworkDriver]) -> ConfigDict:
-    for d in devices:
-        with devices[d] as device:
-            configuration = device.get_config()
+    for device in devices:
+        with devices[device] as d:
+            configuration = d.get_config()
             return configuration["startup"], configuration["running"]
         
 def command_test(devices: dict[str, NetworkDriver]) -> dict:
-    for d in devices:
-        with devices[d] as device:
-            output = device.cli(["show vlan brief"])
+    for device in devices:
+        with devices[device] as d:
+            output = d.cli(["show vlan brief"])
             with open("vlan_brief.txt", "w") as f:
                 f.write(str(output))
 
 
-def print_to_terminal(device_facts: list[list[str]]) -> None:
-    print("Print device facts to terminal")
+def print_to_terminal(device_facts: list[list[str]], device_interfaces: list[list[str]]) -> None:
+    print()
     print(tabulate(device_facts, headers="firstrow"))
+    print()
+    print(tabulate(device_interfaces, headers="firstrow"))
 
 def main():
     device_attr = load_devices_attr("devices.yaml")
     device_configs = initialize_devices(device_attr["devices"])
     devices = initialize_device_connections(device_configs)
     device_facts = get_device_facts(devices)
+    device_interfaces = get_device_interfaces(devices)
     #startup_config, running_connfig = get_device_configs(devices)
     #command_test(devices)
 
-    print_to_terminal(device_facts)
+    print_to_terminal(device_facts, device_interfaces)
     
 
 if __name__ == "__main__":
